@@ -1,9 +1,11 @@
 import 'package:custom_map/service/remote.dart';
 import 'package:custom_map/service/utill.dart';
+import 'package:custom_map/widget/home_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'config/appColor.dart';
 import 'model/direction_model.dart';
 
 class Home extends StatefulWidget {
@@ -14,15 +16,14 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+   GoogleMapController? controller;
+  Marker? origin;
+  Marker? destination;
+  Directions? info;
 
-  late GoogleMapController _controller;
-  Marker? _origin;
-  Marker? _destination;
-  Directions? _info;
+  MapType mode = MapType.hybrid;
 
-  static MapType mode = MapType.hybrid;
-
-  static const CameraPosition _kGooglePlex = CameraPosition(
+  static CameraPosition kGooglePlex = const CameraPosition(
     target: LatLng(40.441078, 071.716952),
     zoom: 18.1519260406,
     bearing: 192.8334901395799,
@@ -32,19 +33,21 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     requestPermission();
+
     super.initState();
   }
   @override
   void dispose() {
     // TODO: implement dispose
-    _controller.dispose();
+    controller?.dispose();
     super.dispose();
   }
 
+
   _addMarker(LatLng pos) async {
-    if (_origin == null || (_origin != null && _destination != null)) {
+    if (origin == null || (origin != null && destination != null)) {
       setState(() {
-        _origin = Marker(
+        origin = Marker(
           markerId: const MarkerId("origin"),
           infoWindow: const InfoWindow(title: "Origin"),
           icon:
@@ -52,13 +55,13 @@ class _HomeState extends State<Home> {
           position: pos,
         );
         //reset dest
-        _destination = null;
+        destination = null;
         //reset info
-        _info = null;
+        info = null;
       });
     } else {
       setState(() {
-        _destination = Marker(
+        destination = Marker(
           markerId: const MarkerId("destination"),
           infoWindow: const InfoWindow(title: "Destination"),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
@@ -67,10 +70,10 @@ class _HomeState extends State<Home> {
       });
       // get directions
       final directions = await DirectionsRepository().getDirections(
-        origin: _origin!.position,
+        origin: origin!.position,
         destinination: pos,
       );
-      setState(() => _info = directions);
+      setState(() => info = directions);
     }
   }
 
@@ -79,46 +82,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Custom Map"),
-        actions: [
-          if (_origin != null)
-            TextButton(
-              onPressed: () =>
-                  _controller.animateCamera(
-                    CameraUpdate.newCameraPosition(
-                      CameraPosition(
-                        target: _origin!.position,
-                        zoom: 14.5,
-                        tilt: 50.0,
-                      ),
-                    ),
-                  ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.green, textStyle: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              child: const Text("ORIGIN"),
-            ),
-          if (_destination != null)
-            TextButton(
-              onPressed: () =>
-                  _controller.animateCamera(
-                    CameraUpdate.newCameraPosition(
-                      CameraPosition(
-                        target: _origin!.position,
-                        zoom: 14.5,
-                        tilt: 50.0,
-                      ),
-                    ),
-                  ),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.green, textStyle: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              child: const Text("DEST"),
-            ),
-        ],
-      ),
+      appBar: HomeAppBar(controller: controller, origin: origin, destination: destination, info: info),
       body: Stack(
         alignment: Alignment.center,
         children: [
@@ -126,19 +90,19 @@ class _HomeState extends State<Home> {
             mapType: mode,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            initialCameraPosition: _kGooglePlex,
-            onMapCreated: (controller) => _controller = controller,
+            initialCameraPosition: kGooglePlex,
+            onMapCreated: (controllers) => controller = controllers,
             markers: {
-              if (_origin != null) _origin!,
-              if (_destination != null) _destination!,
+              if (origin != null) origin!,
+              if (destination != null) destination!,
             },
             polylines: {
-              if (_info != null)
+              if (info != null)
                 Polyline(
                   polylineId: const PolylineId('overview_polyline'),
-                  color: Colors.red,
+                  color: AppColor.redDark,
                   width: 5,
-                  points: _info!.polylinePoints
+                  points: info!.polylinePoints
                       .map((e) => LatLng(e.latitude, e.longitude))
                       .toList(),
                 ),
@@ -146,22 +110,22 @@ class _HomeState extends State<Home> {
             onLongPress: _addMarker,
             circles:{
               Circle(circleId: const CircleId("1"),
-              center: _origin?.position!=null?_origin!.position:const LatLng(0.0, 0.0),
+              center: origin?.position!=null?origin!.position:const LatLng(0.0, 0.0),
                 radius: 200,
                 strokeWidth: 3,
-                strokeColor: Colors.black,
+                strokeColor: AppColor.black,
                 fillColor: Colors.blueAccent.withOpacity(0.2),
               ),
               Circle(circleId: const CircleId("2"),
-                center: _destination?.position!=null?_destination!.position:const LatLng(0.0, 0.0),
+                center: destination?.position!=null?destination!.position:const LatLng(0.0, 0.0),
                 radius: 200,
                 strokeWidth: 3,
-                strokeColor: Colors.black,
-                fillColor: Colors.blueAccent.withOpacity(0.2),
+                strokeColor: AppColor.black,
+                fillColor: AppColor.blueLight.withOpacity(0.2),
               ),
             },
           ),
-          if (_info != null)
+          if (info != null)
             Positioned(
               top: 20.0,
               child: Container(
@@ -170,7 +134,7 @@ class _HomeState extends State<Home> {
                   horizontal: 12.0,
                 ),
                 decoration: BoxDecoration(
-                    color: Colors.yellowAccent,
+                    color: AppColor.yellowLight,
                     borderRadius: BorderRadius.circular(20.0),
                     boxShadow: const [
                       BoxShadow(
@@ -180,7 +144,7 @@ class _HomeState extends State<Home> {
                       ),
                     ]),
                 child: Text(
-                  '${_info!.totalDistance}, ${_info!.totalDuration}',
+                  '${info!.totalDistance}, ${info!.totalDuration}',
                   style: const TextStyle(
                       fontSize: 18.0, fontWeight: FontWeight.w400),
                 ),
@@ -197,7 +161,7 @@ class _HomeState extends State<Home> {
             backgroundColor: Theme
                 .of(context)
                 .primaryColor,
-            foregroundColor: Colors.black,
+            foregroundColor: AppColor.black,
             onPressed: () async {
               if (await Permission.location.request().isGranted) {
                 setState(() {
@@ -205,9 +169,9 @@ class _HomeState extends State<Home> {
                 });
               }
             },
-            child: const Icon(
+            child:  Icon(
               Icons.mode_of_travel_outlined,
-              color: Colors.white,
+              color: AppColor.white,
             ),
           ),
           SizedBox(
@@ -220,10 +184,9 @@ class _HomeState extends State<Home> {
             foregroundColor: Colors.black,
             onPressed: () async {
               if (await Permission.location.request().isGranted) {
-                _controller.animateCamera(_info != null
-                    ? CameraUpdate.newLatLngBounds(_info!.bounds, 100.0)
+                controller?.animateCamera(info != null
+                    ? CameraUpdate.newLatLngBounds(info!.bounds, 100.0)
                     :
-
                 CameraUpdate.newCameraPosition(CameraPosition(
                   target: LatLng(Currentposition.latitude,Currentposition.longitude),
                   zoom: 18.1519260406,
@@ -232,12 +195,12 @@ class _HomeState extends State<Home> {
                 )));
                 // Either the permission was already granted before or the user just granted it.
               }else {
-                //requestPermission();
+                requestPermission();
               }
                 },
-            child: const Icon(
+            child:  Icon(
               Icons.location_on_outlined,
-              color: Colors.white,
+              color: AppColor.white,
             ),
           ),
         ],
