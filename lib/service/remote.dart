@@ -18,7 +18,6 @@ class DirectionsRepository{
   static const String _baseUrl =
   'https://maps.googleapis.com/maps/api/directions/json?';
   late  Dio dio;
-
   Future<Directions?> getDirections({
     required LatLng origin,
     required LatLng destinination,

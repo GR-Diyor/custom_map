@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
 
   static CameraPosition kGooglePlex = const CameraPosition(
     target: LatLng(40.441078, 071.716952),
-    zoom: 18.1519260406,
+    zoom: 17.1519260406,
     bearing: 192.8334901395799,
     tilt: 59.440717697143555,
   );
@@ -33,7 +33,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     requestPermission();
-
     super.initState();
   }
   @override
@@ -160,6 +159,48 @@ class _HomeState extends State<Home> {
           FloatingActionButton(
             backgroundColor: Theme
                 .of(context)
+                .buttonTheme.colorScheme!.secondary,
+            foregroundColor: AppColor.black,
+            onPressed: () async {
+              if (await Permission.location.request().isGranted) {
+
+                controller?.animateCamera(
+                  CameraUpdate.zoomBy(-0.5),
+                );
+              }
+            },
+            child:  Icon(
+              Icons.remove,
+              color: AppColor.white,
+              size: 25,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height*0.005+10,
+          ),
+          FloatingActionButton(
+            backgroundColor: Theme
+                .of(context)
+                .buttonTheme.colorScheme!.secondary,
+            foregroundColor: AppColor.black,
+            onPressed: () async {
+              if (await Permission.location.request().isGranted) {
+                controller?.animateCamera(
+                  CameraUpdate.zoomBy(0.5),
+                );
+              }
+            },
+            child:  Icon(
+              Icons.add,
+              color: AppColor.white,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height*0.005+15,
+          ),
+          FloatingActionButton(
+            backgroundColor: Theme
+                .of(context)
                 .primaryColor,
             foregroundColor: AppColor.black,
             onPressed: () async {
@@ -170,7 +211,7 @@ class _HomeState extends State<Home> {
               }
             },
             child:  Icon(
-              Icons.mode_of_travel_outlined,
+              Icons.repeat_outlined,
               color: AppColor.white,
             ),
           ),
@@ -189,7 +230,7 @@ class _HomeState extends State<Home> {
                     :
                 CameraUpdate.newCameraPosition(CameraPosition(
                   target: LatLng(Currentposition.latitude,Currentposition.longitude),
-                  zoom: 18.1519260406,
+                  zoom: 17.1519260406,
                   bearing: 192.8334901395799,
                   tilt: 59.440717697143555,
                 )));

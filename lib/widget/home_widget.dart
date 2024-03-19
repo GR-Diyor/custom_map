@@ -9,7 +9,8 @@ AppBar HomeAppBar({ required GoogleMapController? controller,
  Marker? destination,
  Directions? info})=>AppBar(
   centerTitle: true,
-  title: const Text("Custom Map"),
+  title:  Text("Custom Map",style: TextStyle(color: AppColor.white),),
+  backgroundColor: AppColor.blueLight,
   actions: [
     if (origin != null)
       TextButton(
