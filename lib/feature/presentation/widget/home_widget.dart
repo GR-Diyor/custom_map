@@ -1,8 +1,11 @@
   import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../config/appColor.dart';
-import '../model/direction_model.dart';
+import '../../../core/config/appColor.dart';
+import '../../data/model/direction_model.dart';
+
+
+
 
 AppBar HomeAppBar({ required GoogleMapController? controller,
  Marker? origin,

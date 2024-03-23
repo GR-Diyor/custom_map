@@ -1,12 +1,12 @@
-import 'package:custom_map/service/remote.dart';
-import 'package:custom_map/service/utill.dart';
-import 'package:custom_map/widget/home_widget.dart';
+import 'package:custom_map/feature/data/datasource%20/remote/remote.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/config/appColor.dart';
+import '../../data/datasource /local/location_permission.dart';
+import '../../data/model/direction_model.dart';
+import '../widget/home_widget.dart';
 
-import 'config/appColor.dart';
-import 'model/direction_model.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -148,7 +148,7 @@ class _HomeState extends State<Home> {
                       fontSize: 18.0, fontWeight: FontWeight.w400),
                 ),
               ),
-            )
+            ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
@@ -163,7 +163,6 @@ class _HomeState extends State<Home> {
             foregroundColor: AppColor.black,
             onPressed: () async {
               if (await Permission.location.request().isGranted) {
-
                 controller?.animateCamera(
                   CameraUpdate.zoomBy(-0.5),
                 );

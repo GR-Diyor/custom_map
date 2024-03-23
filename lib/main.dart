@@ -1,4 +1,4 @@
-import 'package:custom_map/home.dart';
+import 'package:custom_map/feature/presentation/page/home.dart';
 import 'package:flutter/material.dart';
 
 void main() {

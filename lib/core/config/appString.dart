@@ -1,1 +1,5 @@
+class AppString{
+
+}
+
 const String googleApiKey="AIzaSyDfU10677CSKWFjGqly411mLY5k4uYZ79s";
