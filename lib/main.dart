@@ -1,7 +1,9 @@
+import 'package:custom_map/core/config/app_screen_style.dart';
 import 'package:custom_map/feature/presentation/page/home.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  AppStyle.init();
   runApp(const MyApp());
 }
 

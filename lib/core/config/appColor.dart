@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColor{
+  static Color transparent = Colors.transparent;
   static Color greenDark = Colors.green;
   static Color redDark = Colors.red;
   static Color yellowLight = Colors.yellowAccent;
