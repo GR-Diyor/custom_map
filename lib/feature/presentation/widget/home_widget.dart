@@ -1,19 +1,17 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../../core/config/appColor.dart';
 import '../../data/model/direction_model.dart';
 
 
 
-
-AppBar HomeAppBar({ required GoogleMapController? controller,
+AppBar homeAppBar({ required GoogleMapController? controller,
  Marker? origin,
  Marker? destination,
  Directions? info})=>AppBar(
   centerTitle: true,
   title:  Text("Custom Map",style: TextStyle(color: AppColor.white),),
-  backgroundColor: AppColor.blueLight,
+  backgroundColor: AppColor.blue,
   actions: [
     if (origin != null)
       TextButton(
@@ -38,7 +36,7 @@ AppBar HomeAppBar({ required GoogleMapController? controller,
             controller?.animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(
-                  target: origin!.position,
+                  target: destination.position,
                   zoom: 14.5,
                   tilt: 50.0,
                 ),

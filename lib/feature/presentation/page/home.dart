@@ -1,10 +1,13 @@
-import 'package:custom_map/feature/data/datasource%20/remote/remote.dart';
+import 'package:custom_map/core/config/app_dimension.dart';
+import 'package:custom_map/feature/presentation/cubit/home_cubit.dart';
+import 'package:custom_map/feature/presentation/cubit/home_state.dart';
+import 'package:custom_map/feature/presentation/widget/errors.dart';
+import 'package:custom_map/feature/presentation/widget/loading.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../../core/config/appColor.dart';
-import '../../data/datasource /local/location_permission.dart';
-import '../../data/model/direction_model.dart';
+import '../widget/floating_button.dart';
 import '../widget/home_widget.dart';
 
 
@@ -16,235 +19,135 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-   GoogleMapController? controller;
-  Marker? origin;
-  Marker? destination;
-  Directions? info;
+  late HomeCubit homeCubit;
 
-  MapType mode = MapType.hybrid;
 
-  static CameraPosition kGooglePlex = const CameraPosition(
-    target: LatLng(40.441078, 071.716952),
-    zoom: 17.1519260406,
-    bearing: 192.8334901395799,
-    tilt: 59.440717697143555,
-  );
+
 
   @override
   void initState() {
-    requestPermission();
+    homeCubit = BlocProvider.of(context);
+    homeCubit.requestPermission();
     super.initState();
   }
   @override
   void dispose() {
     // TODO: implement dispose
-    controller?.dispose();
+    homeCubit.controller?.dispose();
     super.dispose();
-  }
-
-
-  _addMarker(LatLng pos) async {
-    if (origin == null || (origin != null && destination != null)) {
-      setState(() {
-        origin = Marker(
-          markerId: const MarkerId("origin"),
-          infoWindow: const InfoWindow(title: "Origin"),
-          icon:
-          BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          position: pos,
-        );
-        //reset dest
-        destination = null;
-        //reset info
-        info = null;
-      });
-    } else {
-      setState(() {
-        destination = Marker(
-          markerId: const MarkerId("destination"),
-          infoWindow: const InfoWindow(title: "Destination"),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          position: pos,
-        );
-      });
-      // get directions
-      final directions = await DirectionsRepository().getDirections(
-        origin: origin!.position,
-        destinination: pos,
-      );
-      setState(() => info = directions);
-    }
   }
 
 
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: HomeAppBar(controller: controller, origin: origin, destination: destination, info: info),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          GoogleMap(
-            mapType: mode,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-            initialCameraPosition: kGooglePlex,
-            onMapCreated: (controllers) => controller = controllers,
-            markers: {
-              if (origin != null) origin!,
-              if (destination != null) destination!,
-            },
-            polylines: {
-              if (info != null)
-                Polyline(
-                  polylineId: const PolylineId('overview_polyline'),
-                  color: AppColor.redDark,
-                  width: 5,
-                  points: info!.polylinePoints
-                      .map((e) => LatLng(e.latitude, e.longitude))
-                      .toList(),
-                ),
-            },
-            onLongPress: _addMarker,
-            circles:{
-              Circle(circleId: const CircleId("1"),
-              center: origin?.position!=null?origin!.position:const LatLng(0.0, 0.0),
-                radius: 200,
-                strokeWidth: 3,
-                strokeColor: AppColor.black,
-                fillColor: Colors.blueAccent.withOpacity(0.2),
-              ),
-              Circle(circleId: const CircleId("2"),
-                center: destination?.position!=null?destination!.position:const LatLng(0.0, 0.0),
-                radius: 200,
-                strokeWidth: 3,
-                strokeColor: AppColor.black,
-                fillColor: AppColor.blueLight.withOpacity(0.2),
-              ),
-            },
-          ),
-          if (info != null)
-            Positioned(
-              top: 20.0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 6.0,
-                  horizontal: 12.0,
-                ),
-                decoration: BoxDecoration(
-                    color: AppColor.yellowLight,
-                    borderRadius: BorderRadius.circular(20.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 2),
-                        blurRadius: 6.0,
-                      ),
-                    ]),
-                child: Text(
-                  '${info!.totalDistance}, ${info!.totalDuration}',
-                  style: const TextStyle(
-                      fontSize: 18.0, fontWeight: FontWeight.w400),
-                ),
-              ),
-            ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            backgroundColor: Theme
-                .of(context)
-                .buttonTheme.colorScheme!.secondary,
-            foregroundColor: AppColor.black,
-            onPressed: () async {
-              if (await Permission.location.request().isGranted) {
-                controller?.animateCamera(
-                  CameraUpdate.zoomBy(-0.5),
-                );
-              }
-            },
-            child:  Icon(
-              Icons.remove,
-              color: AppColor.white,
-              size: 25,
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height*0.005+10,
-          ),
-          FloatingActionButton(
-            backgroundColor: Theme
-                .of(context)
-                .buttonTheme.colorScheme!.secondary,
-            foregroundColor: AppColor.black,
-            onPressed: () async {
-              if (await Permission.location.request().isGranted) {
-                controller?.animateCamera(
-                  CameraUpdate.zoomBy(0.5),
-                );
-              }
-            },
-            child:  Icon(
-              Icons.add,
-              color: AppColor.white,
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height*0.005+15,
-          ),
-          FloatingActionButton(
-            backgroundColor: Theme
-                .of(context)
-                .primaryColor,
-            foregroundColor: AppColor.black,
-            onPressed: () async {
-              if (await Permission.location.request().isGranted) {
-                setState(() {
-                  mode=mode==MapType.hybrid?MapType.normal:MapType.hybrid;
-                });
-              }
-            },
-            child:  Icon(
-              Icons.repeat_outlined,
-              color: AppColor.white,
-            ),
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height*0.005+10,
-          ),
-          FloatingActionButton(
-            backgroundColor: Theme
-                .of(context)
-                .primaryColor,
-            foregroundColor: Colors.black,
-            onPressed: () async {
-              if (await Permission.location.request().isGranted) {
-                controller?.animateCamera(info != null
-                    ? CameraUpdate.newLatLngBounds(info!.bounds, 100.0)
-                    :
-                CameraUpdate.newCameraPosition(CameraPosition(
-                  target: LatLng(Currentposition.latitude,Currentposition.longitude),
-                  zoom: 17.1519260406,
-                  bearing: 192.8334901395799,
-                  tilt: 59.440717697143555,
-                )));
-                // Either the permission was already granted before or the user just granted it.
-              }else {
-                requestPermission();
-              }
+    return BlocBuilder<HomeCubit,HomeState>(
+      builder: (context,state) {
+
+        if(state is HomeLoading){
+          return const Loading();
+        }
+        if(state is HomeError){
+          return Errors(error: state.error);
+        }
+
+        return Scaffold(
+          appBar: homeAppBar(controller: homeCubit.controller, origin: homeCubit.origin, destination: homeCubit.destination, info: homeCubit.info),
+          body: Stack(
+            alignment: Alignment.center,
+            children: [
+              GoogleMap(
+                mapType: homeCubit.mode,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                initialCameraPosition: homeCubit.kGooglePlex,
+                onMapCreated: (controllers) => homeCubit.controller = controllers,
+                markers: {
+                  if (homeCubit.origin != null) homeCubit.origin!,
+                  if (homeCubit.destination != null) homeCubit.destination!,
                 },
-            child:  Icon(
-              Icons.location_on_outlined,
-              color: AppColor.white,
-            ),
+                polylines: {
+                  if (homeCubit.info != null)
+                    Polyline(
+                      polylineId: const PolylineId('overview_polyline'),
+                      color: AppColor.redDark,
+                      width: 5,
+                      points: homeCubit.info!.polylinePoints
+                          .map((e) => LatLng(e.latitude, e.longitude))
+                          .toList(),
+                    ),
+                },
+                onLongPress: homeCubit.addMarker,
+                circles:{
+                  Circle(circleId: const CircleId("1"),
+                  center: homeCubit.origin?.position!=null?homeCubit.origin!.position:const LatLng(0.0, 0.0),
+                    radius: 100,
+                    strokeWidth: 3,
+                    strokeColor: AppColor.black,
+                    fillColor: Colors.blueAccent.withOpacity(0.2),
+                  ),
+                  Circle(circleId: const CircleId("2"),
+                    center: homeCubit.destination?.position!=null?homeCubit.destination!.position:const LatLng(0.0, 0.0),
+                    radius: 100,
+                    strokeWidth: 3,
+                    strokeColor: AppColor.black,
+                    fillColor: AppColor.blue.withOpacity(0.2),
+                  ),
+                },
+              ),
+              if (homeCubit.info != null)
+                Positioned(
+                  top: 2.h,
+                  child: Container(
+                    padding:  EdgeInsets.symmetric(
+                      vertical: 0.6.h,
+                      horizontal: 1.2.h,
+                    ),
+                    decoration: BoxDecoration(
+                        color: AppColor.yellowLight,
+                        borderRadius: BorderRadius.circular(20.0),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 2),
+                            blurRadius: 6.0,
+                          ),
+                        ]),
+                    child: Text(
+                      '${homeCubit.info!.totalDistance}, ${homeCubit.info!.totalDuration}',
+                      style: TextStyle(
+                          fontSize: AppDimension.textSize(context).bodyLarge!.fontSize, fontWeight: FontWeight.w400),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingButton(icon: Icons.remove, onPressed: homeCubit.zoomOut),
+              SizedBox(
+                height: 1.h,
+              ),
+              FloatingButton(icon:Icons.add, onPressed: homeCubit.zoomIn),
+              SizedBox(
+                height: 4.0.h,
+              ),
+              FloatingButton(iSprimaryButton:true,icon: Icons.repeat_outlined, onPressed: homeCubit.replaceMode),
+              SizedBox(
+                height: 1.h,
+              ),
+              FloatingButton(
+                iSprimaryButton: true,
+                icon: Icons.location_on_outlined,
+                onPressed: homeCubit.currentLoaction,
+              ),
+            ],
+          ),
+        );
+      }
     );
   }
 }

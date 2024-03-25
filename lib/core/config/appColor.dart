@@ -5,7 +5,7 @@ class AppColor{
   static Color greenDark = Colors.green;
   static Color redDark = Colors.red;
   static Color yellowLight = Colors.yellowAccent;
-  static Color black = Colors.black;
-  static Color blueLight = Colors.blueAccent;
+  static Color black = Colors.black87;
+  static Color blue = Colors.blue.shade700;
   static Color white = Colors.white;
 }

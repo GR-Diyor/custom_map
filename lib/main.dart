@@ -1,10 +1,21 @@
 import 'package:custom_map/core/config/app_screen_style.dart';
+import 'package:custom_map/feature/presentation/cubit/home_cubit.dart';
 import 'package:custom_map/feature/presentation/page/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'core/config/utill/dimension_utill.dart';
 
 void main() {
   AppStyle.init();
-  runApp(const MyApp());
+
+  runApp(
+      MultiBlocProvider(
+          providers: [
+            BlocProvider<HomeCubit>(
+              create: (BuildContext context) => HomeCubit(),
+            ),
+          ],
+          child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -12,7 +23,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return LayoutBuilder(
+        builder: (context , constraints){
+      SizerUtil.setScreenSize(constraints);
+      return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Custom map',
       theme: ThemeData(
@@ -20,6 +34,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const Home(),
+    );
+        }
     );
   }
 }
