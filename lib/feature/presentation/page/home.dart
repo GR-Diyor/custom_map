@@ -23,7 +23,6 @@ class _HomeState extends State<Home> {
 
 
 
-
   @override
   void initState() {
     homeCubit = BlocProvider.of(context);
