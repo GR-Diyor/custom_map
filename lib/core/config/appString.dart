@@ -1,5 +1,5 @@
 class AppString{
-  static String googleApiKey="AIzaSyDfU10677CSKWFjGqly411mLY5k4uYZ79s";
+  static String googleApiKey="your google map api key";
 
   static String base = "https://maps.googleapis.com";
   static String directionsApi = '/maps/api/directions/json?';
